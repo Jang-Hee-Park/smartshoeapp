@@ -1,0 +1,2 @@
+# smartshoeapp
+smartshoeapp:MainActivity,FootActivity
