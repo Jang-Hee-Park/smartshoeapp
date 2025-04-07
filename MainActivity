@@ -1,0 +1,81 @@
+package com.example.myapplication
+
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.myapplication.ui.theme.MyApplicationTheme
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            MyApplicationTheme {
+                MainScreen(
+                    onStartFootActivity = {
+                        val intent = Intent(this, FootActivity::class.java)
+                        startActivity(intent)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MainScreen(onStartFootActivity: () -> Unit) {
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 🔋 배터리 상태 UI
+            BatteryStatusUI(batteryPercent = 72)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 🦶 압력 측정 버튼
+            Button(onClick = onStartFootActivity) {
+                Text("압력 측정 진입")
+            }
+        }
+    }
+}
+
+@Composable
+fun BatteryStatusUI(batteryPercent: Int) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Image(
+            painter = painterResource(id = R.drawable.battery_icon),
+            contentDescription = "배터리 아이콘",
+            modifier = Modifier.size(64.dp)
+        )
+        Text(
+            text = "배터리: $batteryPercent%",
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MainPreview() {
+    MyApplicationTheme {
+        MainScreen(onStartFootActivity = {})
+    }
+}
