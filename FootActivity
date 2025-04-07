@@ -1,0 +1,108 @@
+package com.example.myapplication
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.example.myapplication.ui.theme.MyApplicationTheme
+
+// ✅ 센서 위치 표현용 클래스
+data class OffsetDP(val x: Dp, val y: Dp)
+
+class FootActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            MyApplicationTheme {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // 🔙 상단 왼쪽 뒤로 가기 버튼
+                    IconButton(
+                        onClick = { finish() },
+                        modifier = Modifier
+                            .padding(start = 16.dp, top = 48.dp)
+                            .align(Alignment.TopStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "뒤로 가기"
+                        )
+                    }
+
+                    // 🦶 센서 UI 포함한 발 화면
+                    FootPressureScreen()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FootPressureScreen() {
+    // 📌 센서 위치 고정
+    val sensorPositions = listOf(
+        OffsetDP(0.dp, 95.dp),       // ① 뒤꿈치
+        OffsetDP(-10.dp, 45.dp),     // ② 중족부 아래
+        OffsetDP(-5.dp, -15.dp),     // ③ 중족부 위
+        OffsetDP(-40.dp, -65.dp),    // ④ 전족부 왼쪽
+        OffsetDP(45.dp, -45.dp)      // ⑤ 전족부 오른쪽
+    )
+
+    // 🧠 압력 값 상태 리스트 (BLE 수신 시 이 값 갱신)
+    val sensorValues = remember { mutableStateListOf(0f, 0f, 0f, 0f, 0f) }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        // 발 이미지
+        Image(
+            painter = painterResource(id = R.drawable.foot),
+            contentDescription = "Foot Image",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(450.dp)
+        )
+
+        // 센서 원 그리기 (위치+값)
+        sensorPositions.forEachIndexed { index, position ->
+            val pressure = sensorValues.getOrElse(index) { 0f }
+            PressureSensorCircle(
+                xOffset = position.x,
+                yOffset = position.y,
+                pressure = pressure
+            )
+        }
+    }
+}
+
+@Composable
+fun PressureSensorCircle(xOffset: Dp, yOffset: Dp, pressure: Float) {
+    // 압력값에 따라 색상 결정
+    val color = when {
+        pressure == 0f -> Color.LightGray.copy(alpha = 0.3f) // 센서 수신 전
+        pressure >= 20f -> Color.Red
+        pressure >= 10f -> Color(0xFFFF9800) // 주황
+        else -> Color(0xFF4CAF50) // 초록
+    }
+
+    Box(
+        modifier = Modifier
+            .offset(x = xOffset, y = yOffset)
+            .size(40.dp)
+            .background(color = color, shape = CircleShape)
+    )
+}
